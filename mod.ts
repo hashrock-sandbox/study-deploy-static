@@ -1,29 +1,24 @@
-import {
-  fromFileUrl,
-  dirname,
-  join,
-} from "https://deno.land/std@0.78.0/path/mod.ts";
+import { join } from "https://deno.land/std@0.78.0/path/mod.ts";
+import { lookup } from "https://deno.land/x/media_types/mod.ts";
 
 const files = ["index.html", "style.css"];
-const BASEPATH = "/"
+const BASE_PATH = "/";
+const PUBLIC_PATH = "./public";
+
+async function createResponse(fileName: string) {
+  const file = await Deno.readFile(fileName);
+  const contentType = lookup(fileName) || "text/plain";
+  const response = new Response(file);
+  response.headers.set("content-type", contentType);
+  return response;
+}
 
 async function handleRequest(request: Request) {
   const { pathname } = new URL(request.url);
-  console.log(pathname, join("", files[1]));
-  if (pathname.startsWith(BASEPATH + files[1])) {
-    const file = await Deno.readFile(join("./public", files[1]));
-    return new Response(file, {
-      headers: {
-        "content-type": "text/css",
-      },
-    });
+  if (pathname.startsWith(BASE_PATH + files[1])) {
+    return await createResponse(join(PUBLIC_PATH, files[1]));
   }
-
-  return new Response(await Deno.readFile(join("./public", files[0])), {
-    headers: {
-      "content-type": "text/html; charset=utf-8",
-    },
-  });
+  return createResponse(join(PUBLIC_PATH, files[0]));
 }
 
 addEventListener("fetch", (event: FetchEvent) => {

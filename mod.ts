@@ -1,7 +1,7 @@
 import { join } from "https://deno.land/std@0.78.0/path/mod.ts";
 import { lookup } from "https://deno.land/x/media_types/mod.ts";
 
-const files = ["index.html", "style.css"];
+const files = ["index.html", "style.css", "index.js"];
 const BASE_PATH = "/";
 const PUBLIC_PATH = "./public";
 
@@ -15,8 +15,10 @@ async function createResponse(fileName: string) {
 
 async function handleRequest(request: Request) {
   const { pathname } = new URL(request.url);
-  if (pathname.startsWith(BASE_PATH + files[1])) {
-    return await createResponse(join(PUBLIC_PATH, files[1]));
+  for(const file of files) {
+    if(pathname.startsWith(BASE_PATH + file)) {
+      return await createResponse(join(PUBLIC_PATH, file));
+    }
   }
   return createResponse(join(PUBLIC_PATH, files[0]));
 }
